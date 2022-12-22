@@ -1,0 +1,93 @@
+openapi: 3.0.3
+
+info:
+  title: 'Challenge'
+  description: '-'
+  version: 0.0.1
+
+paths:
+  /query:
+    get:
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+      summary: Get Query Results
+      description: Perform a query synchronously.
+      responses:
+        '200':
+          description: The results are available.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /queryAsync:
+    post:
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+      summary: Create a Query
+      description: >
+        This endpoint returns a reference ID that is used to get the query results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  nullable: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingQuery'
+
+  /queryAsync/{queryId}:
+    get:
+      parameters:
+        - in: path
+          name: queryId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      summary: Get Query Results
+      description: >
+        Get the results of a query if it has completed.
+        
+        If the query has not completed, an empty `202` response will be returned.
+      responses:
+        '200':
+          description: The results are available.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '202':
+          description: The results are not yet available.
+
+components:
+  schemas:
+    PendingQuery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+          description: Reference ID used to retrieve the results of the query.
